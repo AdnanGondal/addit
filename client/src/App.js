@@ -26,7 +26,7 @@ class App extends React.Component {
 
   async postVote(direction, id) {
     try {
-      await fetch(`http://localhost:8080/stories/${id}/votes`, {
+      await fetch(`http://localhost:8080/api/stories/${id}/votes`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -42,7 +42,7 @@ class App extends React.Component {
   async postStory(title, url) {
     console.log(url);
     try {
-      await fetch(`http://localhost:8080/stories/`, {
+      await fetch(`http://localhost:8080/api/stories/`, {
         method: "POST",
         headers: {
           Accept: "application/json",
