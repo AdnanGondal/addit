@@ -2,12 +2,19 @@
 
 const express = require("express");
 const path = require("path");
+const sqlite3 = require("sqlite3").verbose();
+var cors = require("cors");
 const PORT = process.env.PORT || 8080;
 
 const app = express();
 
-app.get("/api", (req, res) => {
-  res.json({ message: "Hello from server!" });
+app.use(cors());
+let db = new sqlite3.Database("./server/stories.db");
+
+app.get("/api/stories", (req, res) => {
+  const stories = db.all("SELECT * FROM stories", (err, stories) => {
+    res.json({ stories });
+  });
 });
 
 // Have Node serve the files for our built React app

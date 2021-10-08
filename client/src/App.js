@@ -1,12 +1,12 @@
-import './App.css';
-import React from 'react';
-import Story from './Story';
-import StoryForm from './StoryForm';
+import "./App.css";
+import React from "react";
+import Story from "./Story";
+import StoryForm from "./StoryForm";
 
 class App extends React.Component {
   state = {
     stories: [],
-    loading: false
+    loading: false,
   };
 
   async componentDidMount() {
@@ -15,20 +15,24 @@ class App extends React.Component {
 
   async fetchData() {
     this.setState({ loading: true });
-    let response = await fetch('http://localhost:8080/stories');
-    let json = await response.json();
-    this.setState({ stories: json, loading: false });
+    try {
+      let response = await fetch("http://localhost:8080/api/stories");
+      let json = await response.json();
+      this.setState({ stories: json, loading: false });
+    } catch (err) {
+      alert(err);
+    }
   }
 
   async postVote(direction, id) {
     try {
       await fetch(`http://localhost:8080/stories/${id}/votes`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ direction: direction })
+        body: JSON.stringify({ direction: direction }),
       });
     } catch (err) {
       console.log(err);
@@ -39,12 +43,12 @@ class App extends React.Component {
     console.log(url);
     try {
       await fetch(`http://localhost:8080/stories/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: title, url: `https://${url}` })
+        body: JSON.stringify({ title: title, url: `https://${url}` }),
       });
     } catch (err) {
       console.log(err);
@@ -67,7 +71,7 @@ class App extends React.Component {
 
   getStoriesComponentList(stories) {
     if (stories.length == 0) return <p>No Stories yet</p>;
-    return stories.map((story) => (
+    return stories.stories.map((story) => (
       <Story key={story.title} story={story} handleClick={this.handleClick} />
     ));
   }
@@ -80,7 +84,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <header>
-          <h1>Very Good™️ Social News Site</h1>
+          <h1>Addit: Very Good™️ Social News Site</h1>
         </header>
         <StoryForm addStory={this.addStory} />
         <main>
