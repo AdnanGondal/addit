@@ -1,7 +1,7 @@
 import "./App.css";
 import React from "react";
-import Story from "./Story";
-import StoryForm from "./StoryForm";
+import Story from "./Components/Story";
+import StoryForm from "./Components/StoryForm";
 
 class App extends React.Component {
   state = {

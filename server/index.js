@@ -6,6 +6,8 @@ const sqlite3 = require("sqlite3").verbose();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const PORT = process.env.PORT || 8080;
+const getTitleAtUrl = require("get-title-at-url");
+const { title } = require("process");
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,12 +21,13 @@ app.get("/api/stories", async (req, res) => {
     MAX(0, SUM(CASE direction WHEN 'up' THEN 1 ELSE -1 END)) AS score
     FROM stories
     LEFT JOIN votes ON votes.story_id = stories.id
-    GROUP BY stories.id;`,
+    GROUP BY stories.id
+    ORDER BY score DESC;`,
     (err, stories) => {
       if (err) {
         console.log(err);
       }
-      console.log(stories);
+      //console.log(stories);
       res.json({ stories });
     }
   );
@@ -44,13 +47,24 @@ app.post("/api/stories/:id/votes", (req, res) => {
 });
 
 app.post("/api/stories/", (req, res) => {
-  const { title, url } = req.body;
+  const { url, title } = req.body;
   console.log(title);
-  if (title && url) {
+  if (url && !title) {
+    getTitleAtUrl(url, function (title) {
+      console.log(title);
+      console.log(url);
+      db.run(
+        `INSERT INTO stories (title,url)
+                            VALUES(?,?);
+                            `,
+        [title, url]
+      );
+    });
+  } else if (url && title) {
     db.run(
       `INSERT INTO stories (title,url)
-                VALUES(?,?);
-                `,
+                          VALUES(?,?);
+                          `,
       [title, url]
     );
   }

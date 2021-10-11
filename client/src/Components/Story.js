@@ -1,15 +1,15 @@
-import React from 'react';
-import './Story.css';
+import React from "react";
+import "./Story.css";
 
 class Story extends React.Component {
   constructor(props) {
     super(props);
-    console.log('The props passed to the Story component were: ' + props);
+    console.log("The props passed to the Story component were: " + props);
     this.state = { score: props.story.score };
   }
 
   handleClick = (event) => {
-    if (event.target.name == 'up') {
+    if (event.target.name == "up") {
       this.setState({ score: this.state.score + 1 });
     } else {
       this.setState({ score: this.state.score - 1 });
@@ -44,8 +44,8 @@ class Story extends React.Component {
         </button>
         <a className="title" href={url}>
           {title}
-        </a>{' '}
-        ({this.state.score} points)
+        </a>{" "}
+        ({this.state.score} {this.state.score === 1 ? "point" : "points"})
       </li>
     );
   }
