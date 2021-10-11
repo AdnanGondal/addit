@@ -1,9 +1,10 @@
-import React from 'react';
+import React from "react";
+import validator from "validator";
 
 class StoryForm extends React.Component {
   constructor(props) {
     super();
-    this.state = { title: '', url: '' };
+    this.state = { title: "", url: "", error: "" };
   }
 
   handleChange = (event) => {
@@ -11,7 +12,16 @@ class StoryForm extends React.Component {
   };
 
   handleSubmit = (event) => {
-    this.props.addStory(this.state.title, this.state.url);
+    if (validator.isURL(this.state.url)) {
+      if (this.state.url.startsWith("http")) {
+        this.props.addStory(this.state.title, this.state.url);
+      } else {
+        this.props.addStory(this.state.title, `https://${this.state.url}`);
+      }
+    } else {
+      this.setState({ error: "Error: Invalid URL" });
+      event.preventDefault();
+    }
   };
 
   render() {
@@ -40,6 +50,7 @@ class StoryForm extends React.Component {
 
           <button>Submit</button>
         </form>
+        <p class="error-message">{this.state.error && this.state.error}</p>
       </div>
     );
   }

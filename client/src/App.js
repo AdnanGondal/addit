@@ -48,7 +48,7 @@ class App extends React.Component {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: title, url: `https://${url}` }),
+        body: JSON.stringify({ title: title, url: `${url}` }),
       });
     } catch (err) {
       console.log(err);

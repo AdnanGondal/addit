@@ -45,6 +45,10 @@ input {
   margin: 0 10px;
 }
 
+.error-message {
+  color: red;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
