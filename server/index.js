@@ -4,8 +4,7 @@ const express = require("express");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const bodyParser = require("body-parser");
-var cors = require("cors");
-const e = require("express");
+const cors = require("cors");
 const PORT = process.env.PORT || 8080;
 
 const app = express();

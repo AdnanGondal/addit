@@ -23,6 +23,19 @@ db.run(`
   title TEXT NOT NULL,
   url TEXT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
-  updated_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
-  score INTEGER NOT NULL DEFAULT 0
+  updated_at DATETIME NOT NULL DEFAULT (DATETIME('now'))
   )`);
+console.log("Created Stories Table");
+
+db.run(`
+  CREATE TABLE votes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  direction TEXT NOT NULL DEFAULT 'up',
+  created_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
+  updated_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
+  story_id INTEGER,
+  FOREIGN KEY(story_id) REFERENCES stories(id)
+  )`);
+console.log("Created Votes Table");
+
+db.close();
