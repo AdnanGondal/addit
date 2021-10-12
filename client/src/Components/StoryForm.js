@@ -18,6 +18,9 @@ class StoryForm extends React.Component {
       } else {
         this.props.addStory(this.state.title, `https://${this.state.url}`);
       }
+      if (this.state.title === "") {
+        event.preventDefault();
+      }
     } else {
       this.setState({ error: "Error: Invalid URL" });
       event.preventDefault();

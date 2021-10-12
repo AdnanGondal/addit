@@ -42,7 +42,7 @@ class App extends React.Component {
   async postStory(title, url) {
     console.log(url);
     try {
-      await fetch(`http://localhost:8080/api/stories/`, {
+      let res = await fetch(`http://localhost:8080/api/stories/`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -50,6 +50,10 @@ class App extends React.Component {
         },
         body: JSON.stringify({ title: title, url: `${url}` }),
       });
+      let status = await res.json();
+      if (status.status == "success") {
+        window.location.reload();
+      }
     } catch (err) {
       console.log(err);
     }

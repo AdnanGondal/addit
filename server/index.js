@@ -47,26 +47,30 @@ app.post("/api/stories/:id/votes", (req, res) => {
 });
 
 app.post("/api/stories/", (req, res) => {
-  const { url, title } = req.body;
-  console.log(title);
-  if (url && !title) {
+  const { url, userTitle } = req.body;
+
+  if (url && !userTitle) {
     getTitleAtUrl(url, function (title) {
       console.log(title);
       console.log(url);
+      if (!title) title = "Title Not Found";
       db.run(
         `INSERT INTO stories (title,url)
                             VALUES(?,?);
                             `,
         [title, url]
       );
+      console.log("database updated");
+      res.status(200).json({ status: "success" });
     });
-  } else if (url && title) {
+  } else if (url && userTitle) {
     db.run(
       `INSERT INTO stories (title,url)
                           VALUES(?,?);
                           `,
-      [title, url]
+      [userTitle, url]
     );
+    res.status(200).json({ status: "success" });
   }
 });
 
