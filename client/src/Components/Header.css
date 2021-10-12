@@ -1,0 +1,11 @@
+header {
+  padding: 60px;
+  text-align: center;
+  background: white;
+  color: black;
+  font-size: 30px;
+}
+
+header button {
+  margin: 2px;
+}

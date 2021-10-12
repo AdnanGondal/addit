@@ -12,14 +12,6 @@ li {
   list-style-type: none;
 }
 
-header {
-  background: #fff;
-  padding: 1rem 3rem 1rem;
-  width: 900px;
-  margin: 2rem auto;
-  box-shadow: rgba(0, 0, 0, 0.05) -2px -2px 4px;
-}
-
 .loader {
   border: 8px solid #f3f3f3;
   border-top: 8px solid #ffbe76;
