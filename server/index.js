@@ -47,9 +47,9 @@ app.post("/api/stories/:id/votes", (req, res) => {
 });
 
 app.post("/api/stories/", (req, res) => {
-  const { url, userTitle } = req.body;
-
-  if (url && !userTitle) {
+  const { url, title } = req.body;
+  console.log(title);
+  if (url && !title) {
     getTitleAtUrl(url, function (title) {
       console.log(title);
       console.log(url);
@@ -68,7 +68,7 @@ app.post("/api/stories/", (req, res) => {
       `INSERT INTO stories (title,url)
                           VALUES(?,?);
                           `,
-      [userTitle, url]
+      [title, url]
     );
     res.status(200).json({ status: "success" });
   }
