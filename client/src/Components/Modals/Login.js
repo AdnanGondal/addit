@@ -8,6 +8,7 @@ class Login extends React.Component {
     password: "",
     responseError: "",
     emailError: "",
+    authenticated: false,
   };
 
   constructor(props) {
@@ -59,12 +60,19 @@ class Login extends React.Component {
     }
   };
 
+  handleClose = () => {
+    if (!this.state.authenticated) {
+      this.setState(this.initialState);
+    }
+    this.props.handleCloseModal();
+  };
+
   render() {
     return (
       <ReactModal
         isOpen={this.props.showModal}
         contentLabel="Register Modal"
-        onRequestClose={this.props.handleCloseModal}
+        onRequestClose={this.handleClose}
       >
         <div>
           <h2>Login</h2>

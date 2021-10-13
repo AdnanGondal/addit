@@ -97,12 +97,18 @@ class Register extends React.Component {
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
+
+  handleClose = () => {
+    this.setState(this.initialState);
+    this.props.handleCloseModal();
+  };
+
   render() {
     return (
       <ReactModal
         isOpen={this.props.showModal}
         contentLabel="Register Modal"
-        onRequestClose={this.props.handleCloseModal}
+        onRequestClose={this.handleClose}
       >
         <div>
           <h2>Create Account</h2>
