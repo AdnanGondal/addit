@@ -8,8 +8,9 @@ const cors = require("cors");
 const PORT = process.env.PORT || 8080;
 const getTitleAtUrl = require("get-title-at-url");
 const passwordValidator = require("password-validator");
-const e = require("express");
+const bcrypt = require("bcrypt");
 
+const SALT_ROUNDS = 8;
 const app = express();
 let db = new sqlite3.Database("./server/stories.db");
 
@@ -92,7 +93,7 @@ app.get("/api/users/", (req, res) => {
   res.json({ message: "User sign up get request" });
 });
 
-app.post("/api/users/", (req, res) => {
+app.post("/api/users/", async (req, res) => {
   const { email, password, passwordConfirmation } = req.body;
 
   db.all(
@@ -100,7 +101,7 @@ app.post("/api/users/", (req, res) => {
     WHERE email=?
     `,
     [email],
-    (err, emails) => {
+    async (err, emails) => {
       if (err) {
         console.log(err);
       }
@@ -122,19 +123,22 @@ app.post("/api/users/", (req, res) => {
         res.status(400).json({ message: "Passwords don't match" });
       }
 
-      // Add to User Database, Succesful Response
       if (validPassword && passwordsMatch && !emails.length) {
+        // Add to User Database, Succesful Response
+        const salt = await bcrypt.genSalt(SALT_ROUNDS);
+        const hashed = await bcrypt.hash(password, salt);
+
+        console.log(`Hashed: ${hashed}`);
         console.log("valid password and email");
         db.run(
-          `INSERT INTO users(email,password)
-                VALUES (?,?)
+          `INSERT INTO users(email,password_encrypted,salt)
+                VALUES (?,?,?)
         `,
-          [email, password],
+          [email, hashed, salt],
           (err) => {
             if (err) {
               return console.log(err.message);
             }
-
             console.log(`User registered`);
           }
         );
@@ -144,30 +148,39 @@ app.post("/api/users/", (req, res) => {
   );
 });
 
-app.post("/api/sessions", (req, res) => {
-  const { email, password } = req.body;
+async function compare(password, hashed) {
+  const match = await bcrypt.compare(password, hashed);
+  return match;
+}
 
+app.post("/api/sessions", async (req, res) => {
+  const { email, password } = req.body;
+  console.log(email);
   db.get(
-    `SELECT email,password FROM users
+    `SELECT email,password_encrypted FROM users
           WHERE email=?
   
   `,
     [email],
-    (err, user) => {
+    async (err, user) => {
       if (err) {
         res.status(400).json({ message: err.message });
       }
-
       if (!user) {
         res
           .status(401)
           .json({ success: false, message: "Error: No matching email" });
-      } else if (user.password === password) {
-        res.json({ success: true });
       } else {
-        res
-          .status(401)
-          .json({ success: false, message: "Error: Incorrect Password" });
+        const matched = await bcrypt.compare(password, user.password_encrypted);
+        console.log(matched);
+        //matched = false;
+        if (matched) {
+          res.status(200).json({ success: true, message: "Successful login" });
+        } else {
+          res
+            .status(401)
+            .json({ success: false, message: "Error: Incorrect Password" });
+        }
       }
     }
   );
