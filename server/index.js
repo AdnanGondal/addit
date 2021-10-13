@@ -8,6 +8,7 @@ const cors = require("cors");
 const PORT = process.env.PORT || 8080;
 const getTitleAtUrl = require("get-title-at-url");
 const passwordValidator = require("password-validator");
+const e = require("express");
 
 const app = express();
 let db = new sqlite3.Database("./server/stories.db");
@@ -143,18 +144,31 @@ app.post("/api/users/", (req, res) => {
   );
 });
 
-app.post("api/sessions", (req, res) => {
+app.post("/api/sessions", (req, res) => {
   const { email, password } = req.body;
 
-  authenticated = false;
-  // CODE HERE
+  db.get(
+    `SELECT email,password FROM users
+          WHERE email=?
+  
+  `,
+    [email],
+    (err, user) => {
+      if (err) {
+        res.status(400).json({ message: err.message });
+      }
 
-  if (authenticated) {
-    server.json({ success: true });
-  } else {
-    server.json({ success: false });
-  }
+      if (!user) {
+        res.json({ success: false, message: "Error: No matching email" });
+      } else if (user.password === password) {
+        res.json({ success: true });
+      } else {
+        res.json({ success: false, message: "Error: Incorrect Password" });
+      }
+    }
+  );
 });
+
 // Have Node serve the files for built React app
 app.use(express.static(path.resolve(__dirname, "../client/build")));
 

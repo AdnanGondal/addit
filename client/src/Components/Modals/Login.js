@@ -8,6 +8,7 @@ class Login extends React.Component {
     this.state = {
       username: "",
       password: "",
+      responseError: "",
     };
   }
 
@@ -49,6 +50,7 @@ class Login extends React.Component {
                 />
               </label>
               <button> Login </button>
+              <p className="error-message">{this.state.responseError}</p>
             </div>
           </form>
         </div>

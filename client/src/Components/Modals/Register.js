@@ -43,13 +43,14 @@ class Register extends React.Component {
           passwordConfirmation: passwordConfirmation,
         }),
       });
-      console.log(res.status);
+
       const message = await res.json();
       if (res.status === 409) {
         this.setState({ responseError: message.message });
       } else {
         alert("Succesfully Registered");
         this.setState(this.initialState);
+        this.props.handleCloseModal();
       }
     } catch (err) {
       alert(err);
@@ -66,6 +67,10 @@ class Register extends React.Component {
       this.setState({
         emailError: `Error: Invalid Email`,
       });
+    } else {
+      this.setState({
+        emailError: ``,
+      });
     }
     if (!passwordValidate) {
       this.setState({
@@ -74,6 +79,10 @@ class Register extends React.Component {
     } else if (!passwordsMatch) {
       this.setState({
         passwordError: `Error: Passwords Don't Match`,
+      });
+    } else {
+      this.setState({
+        passwordError: ``,
       });
     }
     if (emailValidate && passwordsMatch && passwordValidate) {
