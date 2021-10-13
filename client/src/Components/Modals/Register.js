@@ -21,12 +21,39 @@ class Register extends React.Component {
     passwordConfirm: "",
     emailError: "",
     passwordError: "",
+    responseError: "",
   };
 
   constructor(props) {
     super(props);
 
     this.state = this.initialState;
+  }
+  async postRegister(email, password, passwordConfirmation) {
+    try {
+      const res = await fetch(`http://localhost:8080/api/users`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          passwordConfirmation: passwordConfirmation,
+        }),
+      });
+      console.log(res.status);
+      const message = await res.json();
+      if (res.status === 409) {
+        this.setState({ responseError: message.message });
+      } else {
+        alert("Succesfully Registered");
+        this.setState(this.initialState);
+      }
+    } catch (err) {
+      alert(err);
+    }
   }
 
   handleSubmit = (event) => {
@@ -50,7 +77,11 @@ class Register extends React.Component {
       });
     }
     if (emailValidate && passwordsMatch && passwordValidate) {
-      this.setState(this.initialState);
+      this.postRegister(
+        this.state.email,
+        this.state.password,
+        this.state.passwordConfirm
+      );
     }
   };
 
@@ -98,6 +129,7 @@ class Register extends React.Component {
               <button> Create Account</button>
               <p className="error-message">{this.state.emailError}</p>
               <p className="error-message">{this.state.passwordError}</p>
+              <p className="error-message">{this.state.responseError}</p>
             </div>
           </form>
         </div>

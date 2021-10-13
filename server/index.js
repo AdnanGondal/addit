@@ -7,13 +7,25 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const PORT = process.env.PORT || 8080;
 const getTitleAtUrl = require("get-title-at-url");
-const { title } = require("process");
+const passwordValidator = require("password-validator");
 
 const app = express();
-app.use(bodyParser.json());
-
-app.use(cors());
 let db = new sqlite3.Database("./server/stories.db");
+
+// PASSWORD REQUIREMENTS
+const schema = new passwordValidator();
+schema
+  .is()
+  .min(8) // Minimum length 8
+  .is()
+  .max(100) // Maximum length 100
+  .has()
+  .lowercase() // Must have lowercase letters
+  .has()
+  .digits(1); // Must have at least 1 digit
+
+app.use(bodyParser.json());
+app.use(cors());
 
 app.get("/api/stories", async (req, res) => {
   db.all(
@@ -49,6 +61,7 @@ app.post("/api/stories/:id/votes", (req, res) => {
 app.post("/api/stories/", (req, res) => {
   const { url, title } = req.body;
   console.log(title);
+  console.log(url);
   if (url && !title) {
     getTitleAtUrl(url, function (title) {
       console.log(title);
@@ -63,7 +76,7 @@ app.post("/api/stories/", (req, res) => {
       console.log("database updated");
       res.status(200).json({ status: "success" });
     });
-  } else if (url && userTitle) {
+  } else if (url && title) {
     db.run(
       `INSERT INTO stories (title,url)
                           VALUES(?,?);
@@ -74,6 +87,74 @@ app.post("/api/stories/", (req, res) => {
   }
 });
 
+app.get("/api/users/", (req, res) => {
+  res.json({ message: "User sign up get request" });
+});
+
+app.post("/api/users/", (req, res) => {
+  const { email, password, passwordConfirmation } = req.body;
+
+  db.all(
+    `SELECT email FROM users
+    WHERE email=?
+    `,
+    [email],
+    (err, emails) => {
+      if (err) {
+        console.log(err);
+      }
+      if (emails.length) {
+        console.log("Error: Email in use already");
+        res.status(409).json({ message: "Email already in use" });
+      }
+
+      // Password validation
+      const validPassword = schema.validate(password);
+      if (!validPassword) {
+        console.log("Password is invalid");
+        res.status(400).json({ message: "Password is invalid" });
+      }
+      // Check Passwords Match
+      const passwordsMatch = password === passwordConfirmation;
+      if (!passwordsMatch) {
+        console.log("Passwords Don't Match");
+        res.status(400).json({ message: "Passwords don't match" });
+      }
+
+      // Add to User Database, Succesful Response
+      if (validPassword && passwordsMatch && !emails.length) {
+        console.log("valid password and email");
+        db.run(
+          `INSERT INTO users(email,password)
+                VALUES (?,?)
+        `,
+          [email, password],
+          (err) => {
+            if (err) {
+              return console.log(err.message);
+            }
+
+            console.log(`User registered`);
+          }
+        );
+        res.status(200).json("message: success");
+      }
+    }
+  );
+});
+
+app.post("api/sessions", (req, res) => {
+  const { email, password } = req.body;
+
+  authenticated = false;
+  // CODE HERE
+
+  if (authenticated) {
+    server.json({ success: true });
+  } else {
+    server.json({ success: false });
+  }
+});
 // Have Node serve the files for built React app
 app.use(express.static(path.resolve(__dirname, "../client/build")));
 

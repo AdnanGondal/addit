@@ -38,4 +38,14 @@ db.run(`
   )`);
 console.log("Created Votes Table");
 
+db.run(`
+  CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
+  updated_at DATETIME NOT NULL DEFAULT (DATETIME('now'))
+  )`);
+console.log("Created User Table");
+
 db.close();
