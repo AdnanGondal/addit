@@ -159,11 +159,15 @@ app.post("/api/sessions", (req, res) => {
       }
 
       if (!user) {
-        res.json({ success: false, message: "Error: No matching email" });
+        res
+          .status(401)
+          .json({ success: false, message: "Error: No matching email" });
       } else if (user.password === password) {
         res.json({ success: true });
       } else {
-        res.json({ success: false, message: "Error: Incorrect Password" });
+        res
+          .status(401)
+          .json({ success: false, message: "Error: Incorrect Password" });
       }
     }
   );
