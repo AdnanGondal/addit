@@ -17,30 +17,50 @@ let db = new sqlite3.Database(path, (err) => {
   console.log("Connected to the SQlite database.");
 });
 
-db.run(`
+db.run(
+  `
   CREATE TABLE stories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   url TEXT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
-  updated_at DATETIME NOT NULL DEFAULT (DATETIME('now'))
-  )`);
-console.log("Created Stories Table");
+  updated_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
+  user_id INTEGER,
+  FOREIGN KEY(user_id) REFERENCES users(id)
+  )`,
+  (err) => {
+    if (err) {
+      console.log("Error with making the Stories Table ");
+      console.log(err);
+    }
+    console.log("Created Stories Table");
+  }
+);
 
-db.run(`
+db.run(
+  `
   CREATE TABLE votes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   direction TEXT NOT NULL DEFAULT 'up',
   created_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
   updated_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
   story_id INTEGER,
-  FOREIGN KEY(story_id) REFERENCES stories(id)
   user_id INTEGER,
+  FOREIGN KEY(story_id) REFERENCES stories(id),
   FOREIGN KEY(user_id) REFERENCES users(id)
-  )`);
-console.log("Created Votes Table");
+  )`,
+  (err) => {
+    if (err) {
+      console.log("Error with making the Votes Table ");
+      console.log(err);
+    } else {
+      console.log("Created Votes Table");
+    }
+  }
+);
 
-db.run(`
+db.run(
+  `
   CREATE TABLE users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE NOT NULL,
@@ -48,15 +68,31 @@ db.run(`
   salt TEXT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
   updated_at DATETIME NOT NULL DEFAULT (DATETIME('now'))
-  )`);
-console.log("Created User Table");
+  )`,
+  (err) => {
+    if (err) {
+      console.log("Error with making the Users Table ");
+      console.log(err);
+    }
+    console.log("Created Users Table");
+  }
+);
 
-db.run(`
+db.run(
+  `
   CREATE TABLE sessions (
   uuid TEXT PRIMARY KEY,
   created_at DATETIME NOT NULL,
-  user_id INTEGER
-)`);
-console.log("Created Sessions Table");
+  user_id INTEGER,
+  FOREIGN KEY(user_id) REFERENCES users(id)
+)`,
+  (err) => {
+    if (err) {
+      console.log("Error with making the Sessions Table ");
+      console.log(err);
+    }
+    console.log("Created Sessions Table");
+  }
+);
 
 db.close();

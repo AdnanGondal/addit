@@ -61,13 +61,23 @@ app.post("/api/stories/:id/votes", (req, res) => {
   const { id } = req.params;
   const { direction } = req.body;
 
-  db.run(
-    `
-      INSERT INTO votes(direction,story_id) 
-      VALUES(?,?);
-      `,
-    [direction, id]
-  );
+  console.log(req.cookies);
+
+  // NEED TO GET IT FROM COOKIE...
+  const sessionID =
+    "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+
+  getCurrentUser(sessionID, (user_id) => {
+    console.log(user_id);
+    res.json({ success: "Maybe it works?" });
+    // db.run(
+    //   `
+    //   INSERT INTO votes(direction,story_id)
+    //   VALUES(?,?,?);
+    //   `,
+    //   [direction, user_id]
+    // );
+  });
 });
 
 app.post("/api/stories/", (req, res) => {
