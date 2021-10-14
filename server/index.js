@@ -17,6 +17,7 @@ const passwordValidator = require("password-validator");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const { v4: uuidv4 } = require("uuid");
+const e = require("express");
 
 const SALT_ROUNDS = 8;
 const app = express();
@@ -57,57 +58,73 @@ app.get("/api/stories", async (req, res) => {
   );
 });
 
+function getCurrentUser(sessionID, fn) {
+  db.get(
+    `
+    SELECT id,email FROM users JOIN sessions ON users.id = sessions.user_id WHERE sessions.uuid = ?
+  `,
+    [sessionID],
+    (err, user) => {
+      fn(user.id);
+    }
+  );
+}
+
 app.post("/api/stories/:id/votes", (req, res) => {
   const { id } = req.params;
   const { direction } = req.body;
 
-  console.log(req.cookies);
+  const sessionID = req.cookies.sessionID;
 
-  // NEED TO GET IT FROM COOKIE...
-  const sessionID =
-    "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
-
-  getCurrentUser(sessionID, (user_id) => {
-    console.log(user_id);
-    res.json({ success: "Maybe it works?" });
-    // db.run(
-    //   `
-    //   INSERT INTO votes(direction,story_id)
-    //   VALUES(?,?,?);
-    //   `,
-    //   [direction, user_id]
-    // );
-  });
+  if (!sessionID) {
+    res.status(403).json({ message: "Error: You need to log in." });
+  } else {
+    getCurrentUser(sessionID, (user_id) => {
+      console.log(user_id);
+      db.run(
+        `
+        INSERT INTO votes(direction,story_id,user_id)
+        VALUES(?,?,?);
+        `,
+        [direction, id, user_id]
+      );
+      res.status(200).json({ message: "Logged in user has voted" });
+    });
+  }
 });
 
 app.post("/api/stories/", (req, res) => {
   const { url, title } = req.body;
 
-  console.log(title);
-  console.log(url);
+  const sessionID = req.cookies.sessionID;
 
-  if (url && !title) {
-    getTitleAtUrl(url, function (title) {
-      if (!title) title = "Title Not Found";
+  if (!sessionID) {
+    console.log("here");
+    res.status(403).json({ message: "Error: You need to log in." });
+  } else {
+    if (url && !title) {
+      getTitleAtUrl(url, function (title) {
+        if (!title) title = "Title Not Found";
 
-      // Put it out in a function
-      db.run(
-        `INSERT INTO stories (title,url)
+        // Put it out in a function
+        db.run(
+          `INSERT INTO stories (title,url)
                             VALUES(?,?);
                             `,
-        [title, url]
-      );
-      console.log("database updated");
-      res.status(200).json({ status: "success" });
-    });
-  } else if (url && title) {
-    db.run(
-      `INSERT INTO stories (title,url)
+          [title, url]
+        );
+        console.log("database updated");
+        res.status(200).json({ status: "success" });
+      });
+    } else if (url && title) {
+      db.run(
+        `INSERT INTO stories (title,url)
                           VALUES(?,?);
                           `,
-      [title, url]
-    );
-    res.status(200).json({ status: "success" });
+        [title, url]
+      );
+      res.status(200).json({ status: "success" });
+    }
   }
 });
 
@@ -148,10 +165,10 @@ app.post("/api/users/", async (req, res) => {
 
         console.log(`Hashed: ${hashed}`);
         db.run(
-          `INSERT INTO users(email,password_encrypted,salt)
-                VALUES (?,?,?)
+          `INSERT INTO users(email,password_encrypted)
+                VALUES (?,?)
         `,
-          [email, hashed, salt],
+          [email, hashed],
           (err) => {
             if (err) {
               return console.log(err.message);
@@ -165,27 +182,11 @@ app.post("/api/users/", async (req, res) => {
   );
 });
 
-function getCurrentUser(sessionID, fn) {
-  db.get(
-    `SELECT * FROM users
-          WHERE user_id = 
-            (SELECT user_id FROM sessions
-              WHERE uuid = ?
-              )
-  
-  `,
-    [sessionID],
-    (err, user) => {
-      fn(user);
-    }
-  );
-}
-
 app.post("/api/sessions", async (req, res) => {
   const { email, password } = req.body;
   console.log(email);
   db.get(
-    `SELECT email,password_encrypted FROM users
+    `SELECT email,password_encrypted,id FROM users
           WHERE email=?
   
   `,
@@ -204,6 +205,7 @@ app.post("/api/sessions", async (req, res) => {
         //matched = false;
         if (matched) {
           const sessionID = uuidv4();
+          console.log(user.id);
           db.run(
             `INSERT INTO sessions (uuid, user_id, created_at) VALUES (?, ?, datetime('now'))`,
             [sessionID, user.id]
