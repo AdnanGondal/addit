@@ -1,5 +1,11 @@
 // server/index.js
 
+// named functions
+// Backend readability
+// group similar functions.
+// Middleware:
+// Router: Seprate files out
+
 const express = require("express");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
@@ -9,11 +15,14 @@ const PORT = process.env.PORT || 8080;
 const getTitleAtUrl = require("get-title-at-url");
 const passwordValidator = require("password-validator");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const { v4: uuidv4 } = require("uuid");
 
 const SALT_ROUNDS = 8;
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.use(cookieParser());
 
 let db = new sqlite3.Database("./server/stories.db");
 
@@ -27,9 +36,9 @@ schema
   .has()
   .lowercase() // Must have lowercase letters
   .has()
-  .digits(1); // Must have at least 1 digit
+  .digits(1); // Must have at least 2 digit
 
-// ROUTING
+// ROUTING ---x
 
 app.get("/api/stories", async (req, res) => {
   db.all(
@@ -70,6 +79,8 @@ app.post("/api/stories/", (req, res) => {
   if (url && !title) {
     getTitleAtUrl(url, function (title) {
       if (!title) title = "Title Not Found";
+
+      // Put it out in a function
       db.run(
         `INSERT INTO stories (title,url)
                             VALUES(?,?);
@@ -88,10 +99,6 @@ app.post("/api/stories/", (req, res) => {
     );
     res.status(200).json({ status: "success" });
   }
-});
-
-app.get("/api/users/", (req, res) => {
-  res.json({ message: "User sign up get request" });
 });
 
 app.post("/api/users/", async (req, res) => {
@@ -148,6 +155,22 @@ app.post("/api/users/", async (req, res) => {
   );
 });
 
+function getCurrentUser(sessionID, fn) {
+  db.get(
+    `SELECT * FROM users
+          WHERE user_id = 
+            (SELECT user_id FROM sessions
+              WHERE uuid = ?
+              )
+  
+  `,
+    [sessionID],
+    (err, user) => {
+      fn(user);
+    }
+  );
+}
+
 app.post("/api/sessions", async (req, res) => {
   const { email, password } = req.body;
   console.log(email);
@@ -170,6 +193,13 @@ app.post("/api/sessions", async (req, res) => {
         console.log(matched);
         //matched = false;
         if (matched) {
+          const sessionID = uuidv4();
+          db.run(
+            `INSERT INTO sessions (uuid, user_id, created_at) VALUES (?, ?, datetime('now'))`,
+            [sessionID, user.id]
+          );
+          res.cookie("sessionID", sessionID);
+
           res.status(200).json({ success: true, message: "Successful login" });
         } else {
           res

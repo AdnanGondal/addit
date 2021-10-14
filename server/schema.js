@@ -35,6 +35,8 @@ db.run(`
   updated_at DATETIME NOT NULL DEFAULT (DATETIME('now')),
   story_id INTEGER,
   FOREIGN KEY(story_id) REFERENCES stories(id)
+  user_id INTEGER,
+  FOREIGN KEY(user_id) REFERENCES users(id)
   )`);
 console.log("Created Votes Table");
 
@@ -48,5 +50,13 @@ db.run(`
   updated_at DATETIME NOT NULL DEFAULT (DATETIME('now'))
   )`);
 console.log("Created User Table");
+
+db.run(`
+  CREATE TABLE sessions (
+  uuid TEXT PRIMARY KEY,
+  created_at DATETIME NOT NULL,
+  user_id INTEGER
+)`);
+console.log("Created Sessions Table");
 
 db.close();
