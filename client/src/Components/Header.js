@@ -6,10 +6,13 @@ import Register from "./Modals/Register";
 class Header extends React.Component {
   constructor(props) {
     super(props);
+    console.log("HEADER COMPONENT");
+    console.log(this.props.loggedIn);
+
     this.state = {
       showRegisterModal: false,
       showLoginModal: false,
-      loggedIn: this.props.loggedIn,
+      loggedIn: props.loggedIn,
     };
   }
 
@@ -21,12 +24,33 @@ class Header extends React.Component {
     this.setState({ showLoginModal: true });
   };
 
+  async logoutPost() {
+    try {
+      const res = await fetch(`http://localhost:8080/api/sessions`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "",
+          password: "",
+        }),
+      });
+      const message = await res.json();
+    } catch (err) {
+      alert(err);
+    }
+  }
+
   handleLogout = () => {
     console.log("You have logged out");
 
     // LOGOUT TO DO
 
     // ACTUALLY HAVE TO REMOVE THE COOKIES
+    this.logoutPost();
 
     //
     this.setState({ loggedIn: false });

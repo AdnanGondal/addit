@@ -12,7 +12,7 @@ class App extends React.Component {
     stories: [],
     loading: false,
     responseError: "",
-    loggedIn: false,
+    loggedIn: "",
   };
 
   async componentDidMount() {
@@ -22,10 +22,17 @@ class App extends React.Component {
   async fetchData() {
     this.setState({ loading: true });
     try {
-      let response = await fetch("http://localhost:8080/api/stories");
+      let response = await fetch("http://localhost:8080/api/stories", {
+        credentials: "include",
+      });
       let json = await response.json();
-
-      this.setState({ stories: json, loading: false });
+      console.log("JSON:");
+      console.log(json.loggedIn);
+      this.setState({
+        stories: json.stories,
+        loading: false,
+        loggedIn: json.loggedIn,
+      });
     } catch (err) {
       alert(err);
     }
@@ -60,11 +67,9 @@ class App extends React.Component {
   };
 
   getStoriesComponentList(stories) {
-    console.log(stories);
-    if (stories.length == 0 || !stories["stories"].length)
-      return <p>No Stories yet</p>;
+    if (stories.length == 0) return <p>No Stories yet</p>;
 
-    return stories.stories.map((story) => (
+    return stories.map((story) => (
       <Story key={story.title} story={story} handleClick={this.handleClick} />
     ));
   }
@@ -73,10 +78,16 @@ class App extends React.Component {
     return <div className="loader" />;
   }
 
+  showHeader() {
+    if (this.state.loggedIn === true || this.state.loggedIn === false) {
+      return <Header loggedIn={this.state.loggedIn} />;
+    }
+  }
+
   render() {
     return (
       <div className="App">
-        <Header loggedIn={this.state.loggedIn} />
+        {this.showHeader()}
         <StoryForm />
         <main>
           <h2>Top Stories</h2>

@@ -49,11 +49,17 @@ app.get("/api/stories", async (req, res) => {
     LEFT JOIN votes ON votes.story_id = stories.id
     GROUP BY stories.id
     ORDER BY score DESC;`,
+
     (err, stories) => {
       if (err) {
         console.log(err);
       }
-      res.json({ stories });
+      //console.log(req.cookies.sessionID);
+      if (req.cookies.sessionID) {
+        res.json({ stories: stories, loggedIn: true });
+      } else {
+        res.json({ stories: stories, loggedIn: false });
+      }
     }
   );
 });
@@ -182,6 +188,7 @@ app.post("/api/users/", async (req, res) => {
 app.post("/api/sessions", async (req, res) => {
   const { email, password } = req.body;
   console.log(email);
+
   db.get(
     `SELECT email,password_encrypted,id FROM users
           WHERE email=?
@@ -189,8 +196,15 @@ app.post("/api/sessions", async (req, res) => {
   `,
     [email],
     async (err, user) => {
+      console.log(req.cookies.sessionID);
       if (err) {
         res.status(400).json({ message: err.message });
+        return;
+      }
+      if (req.cookies.sessionID) {
+        res.clearCookie("sessionID");
+        res.status(200).json({ message: "logged out" });
+        return;
       }
       if (!user) {
         res
