@@ -24,6 +24,7 @@ class Login extends React.Component {
     try {
       const res = await fetch(`http://localhost:8080/api/sessions`, {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",

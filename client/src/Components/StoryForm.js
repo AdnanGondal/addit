@@ -28,6 +28,7 @@ class StoryForm extends React.Component {
     try {
       let res = await fetch(`http://localhost:8080/api/stories/`, {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -35,7 +36,11 @@ class StoryForm extends React.Component {
         body: JSON.stringify({ title: title, url: `${url}` }),
       });
       let status = await res.json();
-      if (status.status == "success") {
+      if (res.status === 403) {
+        this.setState({ error: "You are not logged in." });
+      }
+
+      if (status.status === "success") {
         window.location.reload();
       }
     } catch (err) {

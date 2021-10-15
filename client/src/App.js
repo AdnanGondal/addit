@@ -11,6 +11,7 @@ class App extends React.Component {
   state = {
     stories: [],
     loading: false,
+    responseError: "",
   };
 
   async componentDidMount() {
@@ -31,14 +32,20 @@ class App extends React.Component {
 
   async postVote(direction, id) {
     try {
-      await fetch(`http://localhost:8080/api/stories/${id}/votes`, {
+      const res = await fetch(`http://localhost:8080/api/stories/${id}/votes`, {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ direction: direction }),
       });
+
+      const data = res.json(res);
+      if (res.status === 403) {
+        this.setState({ responseError: "You are not logged in. " });
+      }
     } catch (err) {
       alert(err);
     }
@@ -72,6 +79,7 @@ class App extends React.Component {
         <StoryForm />
         <main>
           <h2>Top Stories</h2>
+          <p className="error-message">{this.state.responseError}</p>
           {this.state.loading
             ? this.getLoadingComponent()
             : this.getStoriesComponentList(this.state.stories)}

@@ -22,7 +22,7 @@ const e = require("express");
 const SALT_ROUNDS = 8;
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(cookieParser());
 
 let db = new sqlite3.Database("./server/stories.db");
@@ -97,7 +97,7 @@ app.post("/api/stories/", (req, res) => {
   const { url, title } = req.body;
 
   const sessionID = req.cookies.sessionID;
-
+  console.log(sessionID);
   if (!sessionID) {
     console.log("here");
     res.status(403).json({ message: "Error: You need to log in." });
@@ -105,15 +105,12 @@ app.post("/api/stories/", (req, res) => {
     if (url && !title) {
       getTitleAtUrl(url, function (title) {
         if (!title) title = "Title Not Found";
-
-        // Put it out in a function
         db.run(
           `INSERT INTO stories (title,url)
                             VALUES(?,?);
                             `,
           [title, url]
         );
-        console.log("database updated");
         res.status(200).json({ status: "success" });
       });
     } else if (url && title) {
@@ -210,7 +207,7 @@ app.post("/api/sessions", async (req, res) => {
             `INSERT INTO sessions (uuid, user_id, created_at) VALUES (?, ?, datetime('now'))`,
             [sessionID, user.id]
           );
-          res.cookie("sessionID", sessionID);
+          res.cookie("sessionID", sessionID, { maxAge: 120000 });
 
           res.status(200).json({ success: true, message: "Successful login" });
         } else {

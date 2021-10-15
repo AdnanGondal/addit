@@ -9,7 +9,7 @@ class Story extends React.Component {
   }
 
   handleClick = (event) => {
-    if ((event.target.name = "up")) {
+    if (event.target.name === "up") {
       this.setState({ score: this.state.score + 1 });
     } else {
       this.setState({ score: this.state.score - 1 });
