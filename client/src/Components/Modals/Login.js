@@ -41,6 +41,8 @@ class Login extends React.Component {
         this.setState({ responseError: message.message });
       } else if (message.success) {
         this.setState(this.initialState);
+        this.setState({ authenticated: true });
+        this.handleClose();
         alert("Succesfully Logged In");
       }
     } catch (err) {
@@ -60,11 +62,11 @@ class Login extends React.Component {
     }
   };
 
-  handleClose = () => {
+  handleClose = (authenticated) => {
     if (!this.state.authenticated) {
       this.setState(this.initialState);
     }
-    this.props.handleCloseModal();
+    this.props.handleCloseModal(this.state.authenticated);
   };
 
   render() {

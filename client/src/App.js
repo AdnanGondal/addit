@@ -12,6 +12,7 @@ class App extends React.Component {
     stories: [],
     loading: false,
     responseError: "",
+    loggedIn: false,
   };
 
   async componentDidMount() {
@@ -75,7 +76,7 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <Header />
+        <Header loggedIn={this.state.loggedIn} />
         <StoryForm />
         <main>
           <h2>Top Stories</h2>
